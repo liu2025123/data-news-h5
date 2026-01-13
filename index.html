@@ -1,113 +1,1061 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>百万失独家庭：余生，何处靠岸？</title>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: "Microsoft YaHei", sans-serif; background: #f5f5f5; }
-        .page { min-height: 100vh; padding: 20px; display: flex; flex-direction: column; justify-content: center; }
-        .page1 { background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(https://picsum.photos/id/1002/1080/1920); background-size: cover; color: white; }
-        .title { font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center; }
-        .text { font-size: 16px; line-height: 1.8; margin-bottom: 15px; }
-        .chart { width: 100%; height: 300px; margin: 20px 0; }
-        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #e53935; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>百万失独家庭：余生，何处靠岸？</title>
+  <style>
+    /* 全局核心样式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft Yahei", "PingFang SC", sans-serif;
+    }
+
+    body {
+      background-color: #f9fafb;
+      color: #111827;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* 容器布局 - 修复空白核心 */
+    .container {
+      width: 100%;
+      max-width: 375px;
+      margin: 0 auto;
+      background: white;
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      position: relative;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+
+    .container::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* 音乐控制按钮 */
+    .music-control {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      animation: breathe 2s infinite ease-in-out;
+    }
+
+    /* 分屏样式 - 修复空白核心 */
+    .story-section {
+      min-height: 100vh;
+      padding: 1.5rem 1.5rem; /* 减少上下内边距 */
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.8s ease-in-out;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .story-section.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* 装饰元素 */
+    .decor-element {
+      position: absolute;
+      opacity: 0.08;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .decor-circle {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: #0078ff;
+      right: -50px;
+      bottom: -50px;
+      animation: float 8s infinite ease-in-out;
+    }
+
+    .decor-wave {
+      width: 150px;
+      height: 150px;
+      left: -30px;
+      top: 30%;
+      border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+      background: #4f46e5;
+      animation: wave-move 8s infinite ease-in-out;
+    }
+
+    /* 海浪背景（第一屏专属） */
+    .wave-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #0078ff 0%, #4f46e5 100%);
+      z-index: 0;
+      overflow: hidden;
+    }
+    
+    .wave {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 200%;
+      height: 120px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' fill='%23ffffff' opacity='.25'/%3E%3Cpath d='M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z' fill='%23ffffff' opacity='.5'/%3E%3Cpath d='M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z' fill='%23ffffff'/%3E%3C/svg%3E");
+      background-size: 1000px 100%;
+      animation: wave 10s linear infinite;
+    }
+    
+    .wave:nth-child(2) {
+      bottom: 10px;
+      animation: wave2 15s linear infinite;
+      opacity: 0.8;
+    }
+    
+    .wave:nth-child(3) {
+      bottom: 20px;
+      animation: wave3 20s linear infinite;
+      opacity: 0.6;
+    }
+
+    /* 时间轴样式（第二屏专属） */
+    .timeline {
+      position: relative;
+      margin: 2rem 0;
+      padding-left: 2rem;
+      z-index: 1;
+    }
+    
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 2px;
+      background: #0078ff;
+      animation: timeline-grow 2s ease-out forwards;
+      height: 0;
+    }
+    
+    .timeline-item {
+      position: relative;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      transform: translateX(-20px);
+      animation: timeline-fade 0.5s ease-out forwards;
+    }
+    
+    .timeline-item:nth-child(1) { animation-delay: 0.5s; }
+    .timeline-item:nth-child(2) { animation-delay: 1s; }
+    .timeline-item:nth-child(3) { animation-delay: 1.5s; }
+    
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -2rem;
+      top: 6px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #0078ff;
+    }
+    
+    .timeline-year {
+      font-weight: bold;
+      color: #0078ff;
+      margin-bottom: 0.5rem;
+    }
+
+    /* 背景样式 */
+    .bg-primary {
+      background: linear-gradient(135deg, #0078ff 0%, #4f46e5 100%);
+      color: white;
+      background-image: radial-gradient(circle at 10% 20%, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 90%);
+    }
+
+    .bg-slate-50 {
+      background-color: #f8fafc;
+      background-image: radial-gradient(circle at 80% 80%, #e0e7ff 0%, transparent 50%);
+    }
+
+    .bg-rose-50 {
+      background-color: #fff1f2;
+      background-image: radial-gradient(circle at 20% 20%, #fee2e2 0%, transparent 50%);
+    }
+
+    .bg-gradient {
+      background-image: linear-gradient(to bottom right, #f9fafb, #e5e7eb);
+      background-image: radial-gradient(circle at 50% 50%, #f1f5f9 0%, transparent 70%);
+    }
+
+    .bg-indigo-50 {
+      background-color: #eef2ff;
+      background-image: radial-gradient(circle at 80% 20%, #c7d2fe 0%, transparent 50%);
+    }
+
+    .bg-amber-50 {
+      background-color: #fffbeb;
+      background-image: radial-gradient(circle at 20% 80%, #fde68a 0%, transparent 50%);
+    }
+
+    /* 文本样式 */
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-base { font-size: 1rem; line-height: 1.5rem; }
+    .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+    .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+    .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+    .font-bold { font-weight: 700; }
+    .font-black { font-weight: 900; }
+    .text-center { text-align: center; }
+    .text-primary { color: #0078ff; }
+    .text-destructive { color: #ef4444; }
+    .text-gray-500 { color: #6b7280; }
+    .text-gray-200 { color: #e5e7eb; }
+    .text-indigo-600 { color: #4f46e5; }
+    .text-rose-600 { color: #e11d48; }
+
+    /* 间距与布局 - 修复空白核心 */
+    .mt-2 { margin-top: 0.5rem; }
+    .mt-4 { margin-top: 1rem; }
+    .mt-6 { margin-top: 1.5rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .space-y-4 > * + * { margin-top: 1rem; }
+    .grid-cols-2 { 
+      display: grid; 
+      grid-template-columns: repeat(2, minmax(0, 1fr)); 
+      gap: 1rem; 
+    }
+    .grid-cols-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    /* 卡片样式 */
+    .card {
+      padding: 1rem;
+      border-radius: 0.75rem;
+      background: white;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      position: relative;
+      z-index: 1;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 红枫卡片样式（第五屏专属） */
+    .red-maple-card {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border-left: 4px solid #ef4444;
+    }
+
+    /* 按钮样式 */
+    button {
+      border: none;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      width: 100%;
+      color: white;
+      background: linear-gradient(135deg, #0078ff 0%, #4f46e5 100%);
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: 0.5s;
+    }
+
+    button:hover::after {
+      left: 100%;
+    }
+
+    button:hover {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
+    }
+
+    /* 数据来源样式 */
+    .data-source {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 1rem;
+      font-style: italic;
+    }
+
+    /* 滚动提示 - 修复空白核心 */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 1rem; /* 减少底部距离 */
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.7);
+      font-size: 0.75rem;
+      animation: bounce 2s infinite ease-in-out;
+      z-index: 10;
+      margin: 0; /* 移除默认margin */
+    }
+
+    /* 动画定义 */
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    @keyframes wave-move {
+      0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+      50% { border-radius: 70% 30% 50% 50% / 60% 40% 60% 40%; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-8px); }
+    }
+
+    /* 海浪动画 */
+    @keyframes wave {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    
+    @keyframes wave2 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    
+    @keyframes wave3 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* 时间轴动画 */
+    @keyframes timeline-grow {
+      0% { height: 0; }
+      100% { height: 100%; }
+    }
+    
+    @keyframes timeline-fade {
+      0% { opacity: 0; transform: translateX(-20px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+
+    /* 音乐引导弹窗 */
+    #musicGuide {
+      position:fixed; 
+      top:50%; 
+      left:50%; 
+      transform:translate(-50%,-50%); 
+      background:rgba(0,0,0,0.7); 
+      color:white; 
+      padding:1rem 2rem; 
+      border-radius:0.75rem; 
+      z-index:2000; 
+      display:none; 
+      text-align:center;
+    }
+
+    /* 修复列表符号嵌套问题 */
+    ul {
+      list-style: none; /* 移除默认列表符号 */
+      padding-left: 0;
+    }
+    ul li {
+      position: relative;
+      padding-left: 1.2rem; /* 为自定义符号留出空间 */
+      margin-bottom: 0.5rem;
+    }
+    ul li::before {
+      content: "•"; /* 自定义项目符号 */
+      position: absolute;
+      left: 0;
+      color: inherit;
+      font-weight: bold;
+    }
+    /* 嵌套列表样式 */
+    ul ul {
+      margin-left: 1rem;
+      margin-top: 0.5rem;
+    }
+    ul ul li::before {
+      content: "-"; /* 嵌套列表用短横线 */
+    }
+    /* 有序列表样式 */
+    ol {
+      list-style: decimal;
+      padding-left: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    ol li {
+      padding-left: 0.5rem;
+    }
+
+    /* 新增：手写字体样式 */
+    .handwriting {
+      font-family: "Ma Shan Zheng", "KaiTi", cursive;
+      line-height: 1.8;
+      letter-spacing: 0.5px;
+      position: relative;
+    }
+    
+    /* 手写留言卡片样式 */
+    .message-card {
+      background-color: #f9f6f0;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 12px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+      border-left: 3px solid #ef4444;
+      transform: rotate(-0.5deg);
+      transition: all 0.3s ease;
+    }
+    
+    .message-card:nth-child(even) {
+      transform: rotate(0.5deg);
+      border-left: 3px solid #0078ff;
+      background-color: #f0f7ff;
+    }
+    
+    .message-card:hover {
+      transform: rotate(0deg) scale(1.02);
+      box-shadow: 3px 3px 8px rgba(0,0,0,0.1);
+    }
+    
+    .message-author {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 8px;
+      text-align: right;
+      font-style: italic;
+    }
+    
+    /* 首页封面标题增强 */
+    .cover-title {
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      margin-bottom: 2rem !important;
+      animation: fadeInUp 1s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .cover-subtitle {
+      animation: fadeInUp 1s ease-out 0.3s both;
+    }
+    
+    .cover-image-container {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      animation: fadeInUp 1s ease-out 0.6s both;
+    }
+  </style>
+  <!-- 引入手写字体 -->
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- 第一屏：海浪背景+故事开篇 -->
-    <div class="page page1">
-        <div class="title">百万失独家庭：余生，何处靠岸？</div>
-        <div class="text">"女儿，妈妈来了。"</div>
-        <div class="text">2024年春天，田梦站在广东的彩石滩上，对着汹涌的海浪轻声说道。八年前，她的女儿在这片海的另一端因潜水意外离去。</div>
-        <div class="text">八年后，她自驾2万公里，走遍十三个省份，完成了这场"迟到了八年的约"。</div>
-        <div class="text">在中国，像田梦这样的故事，每年都在7.6万个家庭中发生。</div>
-    </div>
+  <!-- 音乐控制按钮（优化版） -->
+  <div class="music-control" id="musicControl">
+    <!-- 播放/暂停图标 -->
+    <svg id="musicIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0078ff" stroke-width="2">
+      <path d="M9 18V5l12-2v13"/>
+      <circle cx="6" cy="18" r="3"/>
+      <circle cx="18" cy="16" r="3"/>
+    </svg>
+    <!-- 加载/错误提示点（默认隐藏） -->
+    <div id="musicTip" style="position:absolute; width:6px; height:6px; border-radius:50%; background:#ef4444; bottom:5px; right:5px; display:none;"></div>
+  </div>
+  
+  <!-- 背景音乐（优化版，增加备用音源） -->
+  <audio id="backgroundMusic" loop preload="metadata">
+    <!-- 主音源 -->
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2997838476.mp3?filename=soft-piano-background-music-110688.mp3" type="audio/mpeg">
+    <!-- 备用音源（增加容错） -->
+    <source src="https://assets.mixkit.co/music/preview/mixkit-soft-piano-background-1106.mp3" type="audio/mpeg">
+  </audio>
 
-    <!-- 第二屏：时间轴+老龄化对比 -->
-    <div class="page">
-        <div class="title">失独家庭规模变迁</div>
+  <!-- 首次交互引导（可选，提升体验） -->
+  <div id="musicGuide" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.7); color:white; padding:1rem 2rem; border-radius:0.75rem; z-index:2000; display:none; text-align:center;">
+    <p>点击下方按钮播放背景音乐</p>
+    <button id="guidePlayBtn" style="width:auto; padding:0.5rem 1rem; margin-top:0.5rem;">播放音乐</button>
+  </div>
+
+  <div class="container">
+    <!-- 第一屏：封面页 - 增强标题和图片显示 -->
+    <section class="story-section bg-primary text-center">
+      <!-- 海浪动态背景 -->
+      <div class="wave-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+      </div>
+      
+      <!-- 首页核心内容（增强显示效果） -->
+      <h1 class="text-3xl font-black cover-title relative z-10">“女儿，<br/>妈妈来了。”</h1>
+      <h2 class="text-xl font-bold mb-6 cover-subtitle relative z-10 text-gray-200">百万失独家庭：余生，何处靠岸？</h2>
+      <p class="mb-2 cover-subtitle relative z-10">2024年春天，田梦站在广东的彩石滩上，对着汹涌的海浪轻声说道。八年前，她的女儿在这片海的另一端因潜水意外离去。</p>
+      <p class="mb-4 cover-subtitle relative z-10">八年后，她自驾2万公里，走遍十三个省份，完成了这场“迟到了八年的约”。</p>
+      <p class="text-xl font-bold cover-subtitle relative z-10 text-gray-200">在中国，像田梦这样的故事，每年都在7.6万个家庭中发生。</p>
+      <!-- 优化封面配图显示 -->
+      <div class="mt-6 cover-image-container relative z-10">
+        <img src="https://picsum.photos/id/1043/320/220" alt="失独家庭公益配图" style="width: 100%; height: auto; display: block;">
+      </div>
+      <div class="scroll-indicator">↓ 下滑继续</div>
+    </section>
+
+    <!-- 第二屏：数据概览（时间轴） -->
+    <section class="story-section bg-slate-50">
+      <!-- 装饰元素 -->
+      <div class="decor-element decor-circle" style="background: #4f46e5; left: -50px; top: -50px; width: 150px; height: 150px;"></div>
+      
+      <h2 class="text-2xl font-bold mb-6 text-primary relative z-10">孤独的指数级增长</h2>
+      
+      <!-- 时间轴数据 -->
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-year text-xl">2012年</div>
+          <div class="text-base">约100万个失独家庭</div>
+          <div class="text-sm text-gray-500 mt-1">每年新增：约7.6万个</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year text-xl">2022年</div>
+          <div class="text-base">超150万户</div>
+          <div class="text-sm text-gray-500 mt-1">其中32.6%承担隔代抚养责任</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year text-xl">预计2050年</div>
+          <div class="text-base">将达1100万人</div>
+          <div class="text-sm text-gray-500 mt-1">（相当于今天武汉市的总人口全部成为失独老人）</div>
+        </div>
+      </div>
+      
+      <!-- 老龄化对比 -->
+      <div class="card mt-6 relative z-10">
+        <h3 class="font-bold mb-2">老龄化对比</h3>
+        <ul class="space-y-2 text-sm">
+          <li>1990-2020年，老龄化比率从5.6%升至13.5%</li>
+          <li>同期失独家庭从约30万增至150万</li>
+          <li>失独增速是老龄化速度的两倍以上</li>
+        </ul>
+      </div>
+      
+      <!-- 数据来源 -->
+      <div class="data-source relative z-10">
+        数据来源：国家卫生健康委员会《中国家庭发展报告2023》、国家统计局人口普查数据
+      </div>
+    </section>
+
+    <!-- 第三屏：失独原因 -->
+    <section class="story-section">
+      <!-- 装饰元素 -->
+      <div class="decor-element decor-wave" style="background: #ef4444; right: -30px; bottom: 30%;"></div>
+      
+      <h2 class="text-2xl font-bold mb-6 relative z-10">为何他们失去了孩子？</h2>
+      <p class="text-sm text-gray-500 mb-4 relative z-10">基于391份有效调查问卷数据：</p>
+      
+      <div class="space-y-4 relative z-10">
         <div class="card">
-            <div class="card-title">失独家庭数量时间轴</div>
-            <div id="timelineChart" class="chart"></div>
+          <div class="text-3xl font-bold">64.7%</div>
+          <div class="text-gray-500">意外事故（每3个失独家庭中，就有2个因此导致）</div>
         </div>
         <div class="card">
-            <div class="card-title">老龄化与失独增速对比</div>
-            <div id="agingChart" class="chart"></div>
+          <div class="text-2xl font-bold">31.2%</div>
+          <div class="text-gray-500">源于疾病</div>
         </div>
-        <div class="text">数据来源：国家卫生健康委员会《中国家庭发展报告2023》、国家统计局人口普查数据</div>
-    </div>
-
-    <!-- 第三屏：失独原因占比（饼图） -->
-    <div class="page">
-        <div class="title">失独原因分布（391份有效问卷）</div>
-        <div id="reasonChart" class="chart"></div>
         <div class="card">
-            <div class="card-title">基数效应</div>
-            <div class="text">中国有1.9亿独生子女</div>
-            <div class="text">按万分之四的死亡率计算——</div>
-            <div class="text">统计学上的小概率，落在个体身上就是100%</div>
+          <div class="text-xl font-bold">4.1%</div>
+          <div class="text-gray-500">自杀（每100个失独家庭中，有4个因此陷入深度创伤）</div>
         </div>
-    </div>
+        
+        <!-- 基数效应 -->
+        <div class="card mt-4">
+          <h3 class="font-bold mb-2">基数效应</h3>
+          <p class="text-sm">中国有1.9亿独生子女<br/>按万分之四的死亡率计算——<br/><strong>统计学上的小概率，落在个体身上就是100%</strong></p>
+        </div>
+      </div>
+      
+      <!-- 数据来源 -->
+      <div class="data-source relative z-10">
+        数据来源：基于391份调查问卷数据
+      </div>
+    </section>
 
-    <script>
-        // 初始化图表1：失独家庭时间轴
-        const timelineChart=echarts.init(document.getElementById('timelineChart'));
-        timelineChart.setOption({
-            tooltip: { trigger: 'axis' },
-            xAxis: { type: 'category', data: ['2012年', '2022年', '2050年(预测)'] },
-            yAxis: { type: 'value', name: '数量（万户/万人）' },
-            series: [{
-                name: '失独家庭/老人数量',
-                data: [100, 150, 1100],
-                type: 'line',
-                itemStyle: { color: '#e53935' }
-            }]
-        });
+    <!-- 第四屏：经济困境 -->
+    <section class="story-section bg-gradient">
+      <!-- 装饰元素 -->
+      <div class="decor-element decor-circle" style="background: #0078ff; right: -50px; bottom: 50px; width: 150px; height: 150px;"></div>
+      
+      <h2 class="text-2xl font-bold mb-6 text-primary relative z-10">经济的困境</h2>
+      
+      <!-- 收入结构 -->
+      <div class="card mb-4 relative z-10">
+        <h3 class="font-bold mb-2">收入结构</h3>
+        <ul class="space-y-1 text-sm">
+          <li>退休金：55.9%</li>
+          <li>少量临工收入</li>
+          <li>政策/慈善补助</li>
+        </ul>
+      </div>
+      
+      <!-- 年收入分布 -->
+      <div class="card mb-4 relative z-10">
+        <h3 class="font-bold mb-2">年收入分布</h3>
+        <ul class="space-y-1 text-sm">
+          <li>低于5000元：37.08%</li>
+          <li>5001-10000元：13.48%</li>
+          <li><strong>合计年收入低于10000元：50.56%</strong></li>
+          <li>（超过半数生活在贫困线边缘）</li>
+        </ul>
+      </div>
+      
+      <!-- 补贴标准 -->
+      <div class="grid-cols-2 mb-4 relative z-10">
+        <div class="text-center">
+          <div class="text-gray-500 text-sm">2022年国家补贴</div>
+          <div class="text-2xl font-bold text-primary">¥590/月</div>
+        </div>
+        <div class="text-center">
+          <div class="text-gray-500 text-sm">2022年人均消费支出</div>
+          <div class="text-2xl font-bold text-gray-500">¥2045/月</div>
+        </div>
+      </div>
+      
+      <div class="card text-center text-destructive font-bold relative z-10">
+        <p>590元仅为需求的 28.8%</p>
+        <p class="text-sm mt-2 font-normal">学者指出：补贴仅覆盖正常生活开支的62%<br/>意味着：即使拿到全额补贴，仍有38%的基本生活需求无法覆盖</p>
+      </div>
+    </section>
 
-        // 初始化图表2：老龄化与失独增速
-        const agingChart=echarts.init(document.getElementById('agingChart'));
-        agingChart.setOption({
-            tooltip: { trigger: 'axis' },
-            xAxis: { type: 'category', data: ['1990-2020老龄化增速', '同期失独家庭增速'] },
-            yAxis: { type: 'value', name: '增速倍数' },
-            series: [{
-                name: '增速对比',
-                data: [1, 2.1],
-                type: 'bar',
-                itemStyle: { color: ['#4caf50', '#ff9800'] }
-            }]
-        });
+    <!-- 第五屏：心理健康 -->
+    <section class="story-section bg-rose-50">
+      <!-- 装饰元素 -->
+      <div class="decor-element decor-wave" style="background: #ef4444; left: -30px; bottom: 30%;"></div>
+      
+      <h2 class="text-2xl font-bold mb-6 relative z-10">心理的孤岛</h2>
+      
+      <!-- 抑郁率对比 -->
+      <div class="card mb-4 relative z-10">
+        <h3 class="font-bold mb-2">抑郁症状检出率对比</h3>
+        <div class="grid-cols-2">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-destructive">61.9%</div>
+            <div class="text-sm text-gray-500">失独老人</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-gray-500">31%</div>
+            <div class="text-sm text-gray-500">普通老人</div>
+          </div>
+        </div>
+        <p class="text-center text-sm mt-2 font-bold">结论：失独老人抑郁率是普通老人的整两倍</p>
+      </div>
+      
+      <!-- 红枫中心数据 -->
+      <div class="red-maple-card mb-4 relative z-10">
+        <h3 class="font-bold mb-2">红枫中心调查（2014-2015年）</h3>
+        <ul class="space-y-1 text-sm">
+          <li>处于抑郁状态的：超过60%</li>
+          <li>饮食及睡眠不好的：超过60%</li>
+          <li>有强迫症状的：超过50%</li>
+          <li>有自杀倾向的：38%</li>
+          <li>感到自卑的：高达70%</li>
+        </ul>
+      </div>
+      
+      <!-- 社交网络 -->
+      <div class="card relative z-10">
+        <div class="text-xl font-bold text-destructive">41.3%</div>
+        <div class="text-gray-500">失独老人的社会支持网络密度较普通老人低41.3%</div>
+      </div>
+      
+      <!-- 数据来源 -->
+      <div class="data-source relative z-10">
+        数据来源：问卷样本，中国科学院心理研究所《我国老年人的心理健康现状》
+      </div>
+    </section>
 
-        // 初始化图表3：失独原因占比
-        const reasonChart=echarts.init(document.getElementById('reasonChart'));
-        reasonChart.setOption({
-            tooltip: { trigger: 'item' },
-            legend: { orient: 'vertical', left: 10 },
-            series: [{
-                name: '失独原因',
-                type: 'pie',
-                radius: ['40%', '70%'],
-                data: [
-                    { value: 64.7, name: '意外事故' },
-                    { value: 31.2, name: '疾病' },
-                    { value: 4.1, name: '自杀' }
-                ],
-                itemStyle: {
-                    color: ['#ff9800', '#4caf50', '#9c27b0']
-                }
-            }]
-        });
+    <!-- 第六屏：女性视角 -->
+    <section class="story-section">
+      <!-- 装饰元素 -->
+      <div class="decor-element decor-circle" style="background: #9f1239; left: -50px; bottom: -50px; width: 180px; height: 180px;"></div>
+      
+      <h2 class="text-2xl font-bold mb-6 relative z-10">被放大的痛：女性视角</h2>
+      
+      <div class="card mb-4 relative z-10">
+        <div class="text-xl font-bold">288.8万人</div>
+        <div class="text-gray-500 text-sm">50岁及以上“曾生子女无子女”妇女规模</div>
+        <div class="text-xs text-gray-400 mt-1">（数据来源：2024年《人口与经济》杂志推算）</div>
+      </div>
+      
+      <div class="card relative z-10">
+        <h3 class="font-bold mb-2">特殊困境</h3>
+        <ul class="space-y-2 text-sm">
+          <li>离婚率比普通家庭高8倍<br/>   <span class="text-gray-500">（每12.5对失独夫妻，就有1对离婚）</span></li>
+          <li>社会偏见更深<br/>   <span class="text-gray-500">（在意外占比64.7%的数据下，母亲仍常被贴上“失职”标签）</span></li>
+        </ul>
+      </div>
+    </section>
 
-        // 窗口自适应
-        window.addEventListener('resize', () => {
-            timelineChart.resize();
-            agingChart.resize();
-            reasonChart.resize();
+    <!-- 第七屏：互助组织与政策 -->
+    <section class="story-section bg-indigo-50">
+      <!-- 装饰元素 -->
+      <div class="decor-element decor-wave" style="background: #4f46e5; right: -30px; top: 20%;"></div>
+      
+      <h2 class="text-2xl font-bold mb-6 text-primary relative z-10">互助与政策进展</h2>
+      
+      <!-- 互助组织案例 -->
+      <div class="card mb-4 relative z-10">
+        <h3 class="font-bold mb-2">互助组织案例</h3>
+        <ul class="space-y-2 text-sm">
+          <li>北京“连心家园”：失独老人互助社区</li>
+          <li>“失独家庭互助小组”：同命人定期交流、抱团取暖</li>
+          <li>金山公益志愿服务总队：
+            <ul>
+              <li>8年关爱失独家庭</li>
+              <li>近两年服务超过100人次</li>
+              <li>参与者心理改善率达80%以上</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- 规模局限 -->
+      <div class="card mb-4 relative z-10">
+        <div class="text-xl font-bold text-destructive">0.008%</div>
+        <div class="text-gray-500">现有互助服务覆盖率（按150万失独家庭计算）</div>
+      </div>
+      
+      <!-- 政策进展 -->
+      <div class="card relative z-10">
+        <h3 class="font-bold mb-2">2024年全国两会提案</h3>
+        <p class="text-sm mb-2">陈椿委员提交《失独家庭养老保障体系建设亟待加强》建议，提出：</p>
+        <ol>
+          <li>完善法律法规</li>
+          <li>提高服务供给</li>
+          <li>建立心理扶助机制</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 第八屏：行动计算器 -->
+    <section class="story-section bg-amber-50">
+      <!-- 装饰元素 -->
+      <div class="decor-element decor-circle" style="background: #f59e0b; right: -50px; bottom: -50px; width: 200px; height: 200px;"></div>
+      
+      <h2 class="text-2xl font-bold mb-6 text-primary relative z-10">从数据到行动</h2>
+      
+      <!-- 概率的现实 -->
+      <div class="card mb-4 relative z-10">
+        <h3 class="font-bold mb-2">概率的现实</h3>
+        <p class="text-sm">万分之四的独生子女死亡率<br/>= 每250个独生子女家庭中就有1个失独<br/><strong>这不是遥远的数据，而是可能发生在我们身边的现实</strong></p>
+      </div>
+      
+      <!-- 填补缺口方案 -->
+      <div class="card mb-4 relative z-10">
+        <h3 class="font-bold mb-2">填补缺口的数学方案</h3>
+        <p class="text-sm mb-2">38%的基本需求缺口，如果由社会力量参与：</p>
+        <ul class="space-y-1 text-sm">
+          <li>每人每月捐赠10元</li>
+          <li>需要570万人参与</li>
+          <li>按中国10亿网民计，仅需0.57%的参与率</li>
+        </ul>
+      </div>
+      
+      <!-- 志愿者计算 -->
+      <div class="card relative z-10">
+        <h3 class="font-bold mb-2">“成为他们的孩子”的量化表达</h3>
+        <p class="text-sm mb-2">150万失独家庭 × 10%获得社会关怀 = 需要15万志愿者<br/><span class="text-gray-500">（相当于一个中等县城的人口）</span></p>
+        <p class="text-sm font-bold">分散到全国：<br/>每个社区只需要几个志愿者</p>
+      </div>
+    </section>
+
+    <!-- 第九屏：结尾呼吁 - 添加手写留言内容 -->
+    <section class="story-section text-center bg-primary">
+      <!-- 装饰元素 - 调整位置减少空白 -->
+      <div class="decor-element decor-circle" style="width: 150px; height: 150px; bottom: -30px;"></div>
+      <div class="decor-element decor-wave" style="width: 120px; height: 120px; top: 20%;"></div>
+      
+      <h2 class="text-2xl font-bold mb-4 relative z-10 text-white">余生，何处靠岸？</h2>
+      
+      <!-- 完善白色卡片核心内容 - 添加手写留言 -->
+      <div class="card mb-4 relative z-10 bg-white/90" style="padding: 1.5rem;">
+        <p class="text-base mb-4">从100万到150万，再到预计的1100万——<br/>这些不是冰冷的统计，而是一个个真实的人生。</p>
+        <p class="text-base font-bold mb-4">衰老是每个人的终局，但孤独不应该是。</p>
+        <p class="text-base mb-6">我们每一个人，<br/>都可以成为失独老人的“孩子”。</p>
+        
+        <!-- 新增：手写留言墙 -->
+        <div class="mb-6">
+          <h3 class="font-bold mb-3 text-lg text-indigo-600">❤️ 暖心留言墙 ❤️</h3>
+          
+          <!-- 手写留言1 -->
+          <div class="message-card">
+            <p class="handwriting">爷爷奶奶，虽然我的父母也很忙，但我每周都会抽时间去社区看看你们，陪你们聊聊天，就当是多了个孙女。</p>
+            <div class="message-author">—— 小李，25岁，志愿者</div>
+          </div>
+          
+          <!-- 手写留言2 -->
+          <div class="message-card">
+            <p class="handwriting">我也是失独者，但是在互助小组里认识了很多兄弟姐妹，我们互相取暖，日子慢慢有了盼头。</p>
+            <div class="message-author">—— 王阿姨，62岁，失独母亲</div>
+          </div>
+          
+          <!-- 手写留言3 -->
+          <div class="message-card">
+            <p class="handwriting">公司组织了结对帮扶，我认了一位失独妈妈当干妈，逢年过节都会去看望她，就像对待自己的妈妈一样。</p>
+            <div class="message-author">—— 张先生，38岁，企业职员</div>
+          </div>
+          
+          <!-- 手写留言4 -->
+          <div class="message-card">
+            <p class="handwriting">不要觉得孤单，我们都是你的孩子，有什么困难尽管说，社会不会忘记你们。</p>
+            <div class="message-author">—— 一群热心的网友</div>
+          </div>
+        </div>
+        
+        <!-- 核心呼吁内容 -->
+        <div class="mt-4 text-sm text-gray-700 mb-4">
+          <p>❤️ 您的一次关注，就能让他们感受到温暖</p>
+          <p>❤️ 您的一次转发，就能让更多人看到他们的困境</p>
+          <p>❤️ 您的一次帮扶，就能改变一个失独家庭的余生</p>
+        </div>
+        
+        <!-- 配图 -->
+        <img src="https://picsum.photos/id/1068/300/150" alt="关爱失独老人" style="border-radius: 0.5rem; max-width: 100%; margin-top: 0.5rem;">
+        
+        <!-- 留言输入框 -->
+        <div style="margin-top: 1rem;">
+          <textarea placeholder="写下您想对失独老人们说的话..." style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd; font-family: 'Ma Shan Zheng', cursive; font-size: 1rem; margin-bottom: 0.8rem; resize: none; height: 80px;"></textarea>
+          <button style="background: linear-gradient(135deg, #ef4444 0%, #e11d48 100%); padding: 0.6rem; font-size: 0.9rem;">发布暖心留言</button>
+        </div>
+      </div>
+      
+      <div class="space-y-3 relative z-10"> <!-- 减少按钮间距 -->
+        <button>转发呼吁（生成分享图）</button>
+        <button style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">了解帮扶渠道（链接公益组织）</button>
+        <button style="background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);">加入志愿者队伍</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', () => {
+      // ==================== 音乐控制核心逻辑 ====================
+      // 获取元素
+      const musicControl = document.getElementById('musicControl');
+      const backgroundMusic = document.getElementById('backgroundMusic');
+      const musicIcon = document.getElementById('musicIcon');
+      const musicTip = document.getElementById('musicTip');
+      const musicGuide = document.getElementById('musicGuide');
+      const guidePlayBtn = document.getElementById('guidePlayBtn');
+      
+      // 状态变量
+      let isMusicPlaying = false;
+      let isAudioLoaded = false;
+      let userInteracted = false; // 标记用户是否有过主动交互
+
+      // 1. 监听音频加载状态
+      backgroundMusic.addEventListener('loadedmetadata', () => {
+        isAudioLoaded = true;
+        musicTip.style.display = 'none'; // 加载完成，隐藏提示点
+      });
+
+      // 2. 监听音频加载失败
+      backgroundMusic.addEventListener('error', () => {
+        isAudioLoaded = false;
+        musicTip.style.display = 'block'; // 显示错误提示点
+        musicTip.style.background = '#ef4444'; // 红色标记错误
+        musicControl.title = '音频加载失败，请检查网络';
+        console.error('音频资源加载失败');
+      });
+
+      // 3. 监听音频播放/暂停状态
+      backgroundMusic.addEventListener('play', () => {
+        isMusicPlaying = true;
+        // 切换为暂停图标
+        musicIcon.innerHTML = `
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <polygon points="19.5 5.5 15 9 15 15 19.5 18.5 19.5 5.5"></polygon>
+        `;
+        musicTip.style.display = 'none';
+      });
+
+      backgroundMusic.addEventListener('pause', () => {
+        isMusicPlaying = false;
+        // 切换为播放图标
+        musicIcon.innerHTML = `
+          <path d="M9 18V5l12-2v13"/>
+          <circle cx="6" cy="18" r="3"/>
+          <circle cx="18" cy="16" r="3"/>
+        `;
+      });
+
+      // 4. 首次用户交互监听（解决自动播放限制）
+      function handleFirstInteraction() {
+        userInteracted = true;
+        musicGuide.style.display = 'none'; // 隐藏引导弹窗
+        // 尝试预加载音频
+        if (!isAudioLoaded) {
+          backgroundMusic.load();
+        }
+        // 移除所有交互监听（只执行一次）
+        document.removeEventListener('click', handleFirstInteraction);
+        document.removeEventListener('touchstart', handleFirstInteraction);
+      }
+
+      // 监听点击/触摸事件（覆盖移动端和PC端）
+      document.addEventListener('click', handleFirstInteraction, { once: true });
+      document.addEventListener('touchstart', handleFirstInteraction, { once: true });
+
+      // 5. 音乐控制按钮点击逻辑
+      musicControl.addEventListener('click', async () => {
+        // 如果用户还未交互，显示引导弹窗
+        if (!userInteracted) {
+          musicGuide.style.display = 'block';
+          return;
+        }
+
+        // 如果音频未加载，尝试重新加载
+        if (!isAudioLoaded) {
+          musicTip.style.display = 'block';
+          musicTip.style.background = '#f59e0b'; // 黄色标记加载中
+          musicControl.title = '音频加载中...';
+          backgroundMusic.load();
+          // 等待加载完成
+          await new Promise(resolve => {
+            backgroundMusic.addEventListener('loadedmetadata', resolve, { once: true });
+            // 超时处理（5秒）
+            setTimeout(resolve, 5000);
+          });
+        }
+
+        // 核心播放/暂停逻辑
+        try {
+          if (isMusicPlaying) {
+            backgroundMusic.pause();
+          } else {
+            // 播放音频（处理Promise）
+            const playPromise = backgroundMusic.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(err => {
+                console.error('播放失败:', err);
+                musicTip.style.display = 'block';
+                musicTip.style.background = '#ef4444';
+                alert('音乐播放失败，请检查浏览器音频权限');
+              });
+            }
+          }
+        } catch (err) {
+          console.error('播放/暂停出错:', err);
+          alert('音乐控制出错，请刷新页面重试');
+        }
+      });
+
+      // 6. 引导弹窗的播放按钮逻辑
+      guidePlayBtn.addEventListener('click', () => {
+        musicControl.click(); // 触发音乐按钮点击
+      });
+
+      // 7. 页面卸载时停止音频（优化性能）
+      window.addEventListener('beforeunload', () => {
+        backgroundMusic.pause();
+        backgroundMusic.src = ''; // 释放资源
+      });
+
+      // ==================== 滚动激活逻辑 ====================
+      // 滚动时激活当前屏（带动画）
+      const sections = document.querySelectorAll('.story-section');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
         });
-    </script>
+      }, { threshold: 0.5 });
+
+      sections.forEach(section => {
+        observer.observe(section);
+      });
+      
+      // ==================== 新增：留言交互效果 ====================
+      // 为留言卡片添加点击效果
+      const messageCards = document.querySelectorAll('.message-card');
+      messageCards.forEach(card => {
+        card.addEventListener('click', () => {
+          card.style.transform = 'rotate(0deg) scale(1.05)';
+          setTimeout(() => {
+            card.style.transform = 'rotate(0deg) scale(1.02)';
+          }, 200);
+        });
+      });
+      
+      // 留言发布按钮点击效果
+      const publishBtn = document.querySelector('button[style*="background: linear-gradient(135deg, #ef4444 0%, #e11d48 100%)"]');
+      if (publishBtn) {
+        publishBtn.addEventListener('click', () => {
+          const textarea = publishBtn.previousElementSibling;
+          if (textarea.value.trim()) {
+            alert('感谢您的暖心留言！您的善意将会传递给更多失独老人❤️');
+            textarea.value = '';
+          } else {
+            alert('请写下您想对失独老人们说的话');
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>
