@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>百万失独家庭：余生，何处靠岸？</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Microsoft YaHei", sans-serif; background: #f5f5f5; }
+        .page { min-height: 100vh; padding: 20px; display: flex; flex-direction: column; justify-content: center; }
+        .page1 { background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(https://picsum.photos/id/1002/1080/1920); background-size: cover; color: white; }
+        .title { font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center; }
+        .text { font-size: 16px; line-height: 1.8; margin-bottom: 15px; }
+        .chart { width: 100%; height: 300px; margin: 20px 0; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #e53935; }
+    </style>
+</head>
+<body>
+    <!-- 第一屏：海浪背景+故事开篇 -->
+    <div class="page page1">
+        <div class="title">百万失独家庭：余生，何处靠岸？</div>
+        <div class="text">"女儿，妈妈来了。"</div>
+        <div class="text">2024年春天，田梦站在广东的彩石滩上，对着汹涌的海浪轻声说道。八年前，她的女儿在这片海的另一端因潜水意外离去。</div>
+        <div class="text">八年后，她自驾2万公里，走遍十三个省份，完成了这场"迟到了八年的约"。</div>
+        <div class="text">在中国，像田梦这样的故事，每年都在7.6万个家庭中发生。</div>
+    </div>
+
+    <!-- 第二屏：时间轴+老龄化对比 -->
+    <div class="page">
+        <div class="title">失独家庭规模变迁</div>
+        <div class="card">
+            <div class="card-title">失独家庭数量时间轴</div>
+            <div id="timelineChart" class="chart"></div>
+        </div>
+        <div class="card">
+            <div class="card-title">老龄化与失独增速对比</div>
+            <div id="agingChart" class="chart"></div>
+        </div>
+        <div class="text">数据来源：国家卫生健康委员会《中国家庭发展报告2023》、国家统计局人口普查数据</div>
+    </div>
+
+    <!-- 第三屏：失独原因占比（饼图） -->
+    <div class="page">
+        <div class="title">失独原因分布（391份有效问卷）</div>
+        <div id="reasonChart" class="chart"></div>
+        <div class="card">
+            <div class="card-title">基数效应</div>
+            <div class="text">中国有1.9亿独生子女</div>
+            <div class="text">按万分之四的死亡率计算——</div>
+            <div class="text">统计学上的小概率，落在个体身上就是100%</div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化图表1：失独家庭时间轴
+        const timelineChart=echarts.init(document.getElementById('timelineChart'));
+        timelineChart.setOption({
+            tooltip: { trigger: 'axis' },
+            xAxis: { type: 'category', data: ['2012年', '2022年', '2050年(预测)'] },
+            yAxis: { type: 'value', name: '数量（万户/万人）' },
+            series: [{
+                name: '失独家庭/老人数量',
+                data: [100, 150, 1100],
+                type: 'line',
+                itemStyle: { color: '#e53935' }
+            }]
+        });
+
+        // 初始化图表2：老龄化与失独增速
+        const agingChart=echarts.init(document.getElementById('agingChart'));
+        agingChart.setOption({
+            tooltip: { trigger: 'axis' },
+            xAxis: { type: 'category', data: ['1990-2020老龄化增速', '同期失独家庭增速'] },
+            yAxis: { type: 'value', name: '增速倍数' },
+            series: [{
+                name: '增速对比',
+                data: [1, 2.1],
+                type: 'bar',
+                itemStyle: { color: ['#4caf50', '#ff9800'] }
+            }]
+        });
+
+        // 初始化图表3：失独原因占比
+        const reasonChart=echarts.init(document.getElementById('reasonChart'));
+        reasonChart.setOption({
+            tooltip: { trigger: 'item' },
+            legend: { orient: 'vertical', left: 10 },
+            series: [{
+                name: '失独原因',
+                type: 'pie',
+                radius: ['40%', '70%'],
+                data: [
+                    { value: 64.7, name: '意外事故' },
+                    { value: 31.2, name: '疾病' },
+                    { value: 4.1, name: '自杀' }
+                ],
+                itemStyle: {
+                    color: ['#ff9800', '#4caf50', '#9c27b0']
+                }
+            }]
+        });
+
+        // 窗口自适应
+        window.addEventListener('resize', () => {
+            timelineChart.resize();
+            agingChart.resize();
+            reasonChart.resize();
+        });
+    </script>
+</body>
+</html>
